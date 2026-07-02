@@ -92,3 +92,6 @@ if st.button("ประมวลผล BMR และ TDEE", type="primary", use_
         st.metric(label="TDEE (พลังงานรวมที่ใช้ในแต่ละวัน)", value=f"{tdee_result:,.2f} kcal")
         
     st.info("👈 ข้อมูลถูกนำเข้าสู่ระบบแล้ว ไปที่เมนู '2_Set_Goal' เพื่อตั้งเป้าหมายโภชนาการได้เลย")
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("➡️ ไปขั้นตอนต่อไป: ตั้งเป้าหมายโภชนาการ", type="primary", use_container_width=True):
+        st.switch_page("pages/2_Set_Goal.py")

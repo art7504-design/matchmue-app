@@ -89,3 +89,6 @@ if not filtered_df.empty:
         )
         
         st.success(f"บันทึกสำเร็จ! หักแคลอรี่ {consumed_cal:,.0f} kcal และได้รับโปรตีน {consumed_pro:,.0f}g")
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("📊 ดูสรุปโปรไฟล์โภชนาการของคุณ", type="secondary", use_container_width=True):
+            st.switch_page("pages/4_Profile.py")

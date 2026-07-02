@@ -75,3 +75,6 @@ if st.button("ยืนยันแผนการและคำนวณโค
         st.metric(label="โควต้าพลังงานต่อวัน", value=f"{target_cal:,.0f} kcal")
     with col2:
         st.metric(label="เป้าหมายโปรตีนต่อวัน", value=f"{target_protein:,.0f} g")
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("➡️ ไปขั้นตอนต่อไป: ค้นหาร้านอาหารและแผนที่", type="primary", use_container_width=True):
+        st.switch_page("pages/3_Map_and_Menu.py")

@@ -82,16 +82,22 @@ if st.button("ประมวลผล BMR และ TDEE", type="primary", use_
         'protein_consumed': 0.0
     })
     
-    st.success("บันทึกข้อมูลกายภาพเรียบร้อยแล้ว!")
-    
-    # 5. แสดงผลลัพธ์เป็นกล่องตัวเลขขนาดใหญ่ (Metric)
+    st.success("✅ บันทึกข้อมูลกายภาพเรียบร้อยแล้ว!")
+
+# =========================================================
+# 5. แสดงผลลัพธ์และปุ่มไปหน้าต่อไป (ต้องอยู่นอกปุ่มประมวลผล)
+# เช็คว่าถ้ามีค่า BMR ในระบบแล้ว ค่อยโชว์ตัวเลขและปุ่มกดเปลี่ยนหน้า
+# =========================================================
+if st.session_state.user_profile.get('bmr', 0) > 0:
     res_col1, res_col2 = st.columns(2)
     with res_col1:
-        st.metric(label="BMR (พลังงานที่ร่างกายต้องใช้ขณะพัก)", value=f"{bmr_result:,.2f} kcal")
+        st.metric(label="BMR (พลังงานที่ร่างกายต้องใช้ขณะพัก)", value=f"{st.session_state.user_profile['bmr']:,.2f} kcal")
     with res_col2:
-        st.metric(label="TDEE (พลังงานรวมที่ใช้ในแต่ละวัน)", value=f"{tdee_result:,.2f} kcal")
+        st.metric(label="TDEE (พลังงานรวมที่ใช้ในแต่ละวัน)", value=f"{st.session_state.user_profile['tdee']:,.2f} kcal")
         
     st.info("👈 ข้อมูลถูกนำเข้าสู่ระบบแล้ว ไปที่เมนู '2_Set_Goal' เพื่อตั้งเป้าหมายโภชนาการได้เลย")
     st.markdown("<br>", unsafe_allow_html=True)
+    
+    # ปุ่มเปลี่ยนหน้า ตอนนี้อยู่นอกบล็อกแล้ว จะทำงานได้ 100% ครับ
     if st.button("➡️ ไปขั้นตอนต่อไป: ตั้งเป้าหมายโภชนาการ", type="primary", use_container_width=True):
         st.switch_page("pages/2_Set_Goal.py")

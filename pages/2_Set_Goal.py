@@ -1,13 +1,10 @@
 import os
-
-from utils.calculations import calculate_target_calories, calculate_target_protein
 import streamlit as st
-from utils.calculations import calculate_target_calories
+from utils.calculations import calculate_target_calories, calculate_target_protein
 
 st.set_page_config(page_title="กำหนดเป้าหมาย", page_icon="🎯")
 
 # 1. ระบบป้องกันการข้ามขั้นตอน (Error Handling)
-# หากผู้ใช้กดมาหน้านี้โดยที่ยังไม่ได้คำนวณ TDEE ระบบจะแจ้งเตือนและหยุดการทำงานของหน้านี้
 if 'user_profile' not in st.session_state or st.session_state.user_profile.get('tdee', 0) == 0:
     st.warning("⚠️ ไม่พบข้อมูลกายภาพของคุณ กรุณากลับไปคำนวณค่า BMR และ TDEE ในเมนู '1_Calculate_BMR' ก่อนครับ")
     st.stop()
@@ -19,11 +16,10 @@ else:
     st.title("🎯 แผนการของคุณ")
 st.write("เลือกเป้าหมายทางโภชนาการ เพื่อให้ระบบคำนวณโควต้าพลังงานที่เหมาะสมสำหรับคุณ")
 
-# 2. สร้างตัวเลือกเป้าหมาย (เทียบเท่ากับกล่อง 3 กล่องใน Wireframe หน้า 2)
+# 2. สร้างตัวเลือกเป้าหมาย
 goal_options = ["ลดน้ำหนัก", "รักษาน้ำหนัก", "สร้างกล้ามเนื้อ"]
 current_goal = st.session_state.user_profile.get('goal_type', 'รักษาน้ำหนัก')
 
-# ถ้าค่าเดิมไม่มีใน list ให้ตั้งค่าพื้นฐาน
 if current_goal not in goal_options:
     current_goal = "รักษาน้ำหนัก"
 
@@ -46,35 +42,49 @@ elif selected_goal == "รักษาน้ำหนัก":
     
 elif selected_goal == "สร้างกล้ามเนื้อ":
     st.subheader("💪 เป้าหมาย: สร้างกล้ามเนื้อ")
-    # รองรับตารางการฝึกที่มีความถี่สูง
     weight_training_hours = st.number_input("จำนวนชั่วโมงเวทเทรนนิ่งต่อสัปดาห์", min_value=0, max_value=40, value=6, step=1)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 # 4. ปุ่มยืนยันและคำนวณโควต้าแคลอรี่
-if st.button("ยืนยันแผนการและคำนวณโควต้า", type="primary", use_container_width=True):
+if st.button("คำนวณโควต้าโภชนาการประจำวัน", type="primary", use_container_width=True):
     tdee = st.session_state.user_profile['tdee']
-    weight = st.session_state.user_profile['weight'] # ดึงน้ำหนักมาใช้คิดโปรตีน
+    weight = st.session_state.user_profile['weight'] 
     
     target_cal = calculate_target_calories(tdee, selected_goal)
-    target_protein = calculate_target_protein(weight, selected_goal) # คำนวณโปรตีน
+    target_protein = calculate_target_protein(weight, selected_goal) 
     
+    # อัปเดตข้อมูลทั้งหมดลงในกล่องความจำ
     st.session_state.user_profile.update({
         'goal_type': selected_goal,
         'daily_calorie_target': target_cal,
         'calories_consumed': 0.0, 
         'calories_remaining': target_cal,
-        'daily_protein_target': target_protein, # บันทึกโปรตีนเป้าหมาย
-        'protein_consumed': 0.0                 # รีเซ็ตการกินโปรตีน
+        'daily_protein_target': target_protein, 
+        'protein_consumed': 0.0                 
     })
     
-    st.success("✅ บันทึกเป้าหมายเรียบร้อยแล้ว!")
+    st.success("✅ บันทึกเป้าหมายและคำนวณโควต้าเรียบร้อยแล้ว!")
+    # สั่งรีเฟรชหน้าจอ 1 ครั้งเพื่อให้เงื่อนไขด้านล่างทำงานได้อย่างเสถียร
+    st.rerun()
+
+# =========================================================
+# 5. ส่วนแสดงผลลัพธ์และปุ่มไปขั้นตอนต่อไป (แยกออกมานอกปุ่มกดคำนวณ)
+# =========================================================
+if st.session_state.user_profile.get('daily_calorie_target', 0) > 0:
+    st.markdown("---")
+    saved_cal = st.session_state.user_profile['daily_calorie_target']
+    saved_protein = st.session_state.user_profile['daily_protein_target']
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label="โควต้าพลังงานต่อวัน", value=f"{target_cal:,.0f} kcal")
-    with col2:
-        st.metric(label="เป้าหมายโปรตีนต่อวัน", value=f"{target_protein:,.0f} g")
+    # แสดงผลการ์ดตัวเลขสรุปเป้าหมาย
+    res_col1, res_col2 = st.columns(2)
+    with res_col1:
+        st.metric(label="โควต้าพลังงานเป้าหมาย", value=f"{saved_cal:,.0f} kcal / วัน")
+    with res_col2:
+        st.metric(label="เป้าหมายโปรตีนที่ต้องได้รับ", value=f"{saved_protein:,.1f} g / วัน")
+        
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("➡️ ไปขั้นตอนต่อไป: ค้นหาร้านอาหารและแผนที่", type="primary", use_container_width=True):
+    
+    # ปุ่มเปลี่ยนหน้าไปหน้า 3 (ทำงานได้ลื่นไหล 100% ไม่ติดขัดแล้วครับ)
+    if st.button("🗺️ ไปขั้นตอนต่อไป: ค้นหาร้านอาหารและแผนที่", type="primary", use_container_width=True):
         st.switch_page("pages/3_Map_and_Menu.py")
